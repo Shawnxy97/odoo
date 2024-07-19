@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_projects_kanban" model="ir.ui.view">
+        <field name="name">amg.projects.kanban</field>
+        <field name="model">amg.projects</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <templates>
+                    <!--                    <t t-name="kanban-box">-->
+                    <!--                        <div class="oe_kanban_card oe_kanban_global_click">-->
+                    <!--                            <div class="oe_kanban_details">-->
+                    <!--                                &lt;!&ndash; Project Name &ndash;&gt;-->
+                    <!--                                <div class="oe_kanban_name">-->
+                    <!--                                    <strong>-->
+                    <!--                                        <field name="name"/>-->
+                    <!--                                    </strong>-->
+                    <!--                                </div>-->
+                    <!--                                &lt;!&ndash; Project Start Date &ndash;&gt;-->
+                    <!--                                <div class="oe_kanban_date">-->
+                    <!--                                    <span>Start Date:</span>-->
+                    <!--                                    <field name="create_date"/>-->
+                    <!--                                </div>-->
+
+                    <!--                                &lt;!&ndash; Project Manager &ndash;&gt;-->
+                    <!--                                <div class="oe_kanban_manager">-->
+                    <!--                                    <span>Created By:</span>-->
+                    <!--                                    <field name="create_uid" widget="many2one_avatar_user"/>-->
+                    <!--                                </div>-->
+                    <!--                            </div>-->
+                    <!--                        </div>-->
+                    <!--                    </t>-->
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_content oe_kanban_global_click o_kanban_get_form">
+                            <div class="row">
+                                <div class="col-12">
+                                    <strong>
+                                        <field name="name" string="Project Name"/>
+                                    </strong>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-8">
+                                    <field name="builder" string="Contact"/>
+                                </div>
+                                <div class="col-4">
+                                    <div class="oe_kanban_bottom_right float-end">
+                                        <field name="create_uid" widget="many2one_avatar_user"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_data_entry_projects_list" model="ir.ui.view">
+        <field name="name">amg.projects.tree</field>
+        <field name="model">amg.projects</field>
+        <field name="arch" type="xml">
+            <tree string="Projects">
+                <field name="name"/>
+                <field name="builder" optional="hide"/>
+                <field name="project_type" optional="hide"/>
+                <field name="install_type"/>
+                <field name="project_location"/>
+                <field name="fabricator"/>
+
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_data_entry_projects_form" model="ir.ui.view">
+        <field name="name">amg.projects.form</field>
+        <field name="model">amg.projects</field>
+        <field name="arch" type="xml">
+            <form string="Projects">
+                <sheet>
+                    <group>
+                        <group name="Account Info">
+                            <field name="name"/>
+                            <field name="builder"/>
+                            <field name="project_type"/>
+                            <field name="install_type"/>
+                            <field name="project_location"/>
+                            <field name="fabricator"/>
+                        </group>
+                    </group>
+
+                    <hr/>
+                    <group>
+                        <field name="job_ids" readonly="1"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="message_ids"/>
+                </div>
+
+            </form>
+        </field>
+    </record>
+
+    <!-- Please update both act_window when modifying one (open_view_project_all or open_view_project_all_group_stage) as one or the other is used in the menu menu_project -->
+    <record id="action_data_entry_projects" model="ir.actions.act_window">
+        <field name="name">Projects</field>
+        <field name="res_model">amg.projects</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a New Project
+            </p>
+        </field>
+    </record>
+
+
+</odoo>

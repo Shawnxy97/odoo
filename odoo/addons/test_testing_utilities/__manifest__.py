@@ -10,7 +10,7 @@ supposed to do
     'depends': ['base', 'web'],
     'data': [
         'ir.model.access.csv',
-        'menu.xml',
+        'projects_views.xml',
     ],
     'license': 'LGPL-3',
 }

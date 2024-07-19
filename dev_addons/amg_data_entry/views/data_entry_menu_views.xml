@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem
+            id="data_entry_menu_root"
+            name="Data Entry"
+            sequence="1"/>
+
+    <menuitem
+            id="menu_projects"
+            name="Projects"
+            parent="data_entry_menu_root"
+            action="action_data_entry_projects"
+    />
+
+    <menuitem
+            id="menu_jobs"
+            name="Jobs"
+            parent="data_entry_menu_root"
+            action="action_data_entry_jobs"
+    />
+</odoo>

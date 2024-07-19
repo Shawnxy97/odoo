@@ -1,1 +1,1 @@
-from . import job_details
+from . import jobs, projects
