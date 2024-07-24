@@ -23,14 +23,15 @@ from odoo.exceptions import RedirectWarning, UserError, ValidationError
 # Global variables used for the warning fields declared on the res.partner
 # in the following modules : sale, purchase, account, stock
 WARNING_MESSAGE = [
-                   ('no-message','No Message'),
-                   ('warning','Warning'),
-                   ('block','Blocking Message')
-                   ]
+    ('no-message', 'No Message'),
+    ('warning', 'Warning'),
+    ('block', 'Blocking Message')
+]
 WARNING_HELP = 'Selecting the "Warning" option will notify user with the message, Selecting "Blocking Message" will throw an exception with the message and block the flow. The Message has to be written in the next field.'
 
-
 ADDRESS_FIELDS = ('street', 'street2', 'zip', 'city', 'state_id', 'country_id')
+
+
 @api.model
 def _lang_get(self):
     return self.env['res.lang'].get_installed()
@@ -38,6 +39,8 @@ def _lang_get(self):
 
 # put POSIX 'Etc/*' entries at the end to avoid confusing users - see bug 1086728
 _tzs = [(tz, tz) for tz in sorted(pytz.all_timezones, key=lambda tz: tz if not tz.startswith('Etc/') else '_')]
+
+
 def _tz_get(self):
     return _tzs
 
@@ -50,13 +53,14 @@ class FormatAddressMixin(models.AbstractModel):
         # consider the country of the user, not the country of the partner we want to display
         address_view_id = self.env.company.country_id.address_view_id.sudo()
         address_format = self.env.company.country_id.address_format
-        if address_view_id and not self._context.get('no_address_format') and (not address_view_id.model or address_view_id.model == self._name):
-            #render the partner address accordingly to address_view_id
+        if address_view_id and not self._context.get('no_address_format') and (
+                not address_view_id.model or address_view_id.model == self._name):
+            # render the partner address accordingly to address_view_id
             for address_node in arch.xpath("//div[hasclass('o_address_format')]"):
                 Partner = self.env['res.partner'].with_context(no_address_format=True)
                 sub_arch, _sub_view = Partner._get_view(address_view_id.id, 'form')
-                #if the model is different than res.partner, there are chances that the view won't work
-                #(e.g fields not present on the model). In that case we just return arch
+                # if the model is different than res.partner, there are chances that the view won't work
+                # (e.g fields not present on the model). In that case we just return arch
                 if self._name != 'res.partner':
                     try:
                         self.env['ir.ui.view'].postprocess_and_fields(sub_arch, model=self._name)
@@ -122,7 +126,8 @@ class PartnerCategory(models.Model):
     child_ids = fields.One2many('res.partner.category', 'parent_id', string='Child Tags')
     active = fields.Boolean(default=True, help="The active field allows you to hide the category without removing it.")
     parent_path = fields.Char(index=True, unaccent=False)
-    partner_ids = fields.Many2many('res.partner', column1='category_id', column2='partner_id', string='Partners', copy=False)
+    partner_ids = fields.Many2many('res.partner', column1='category_id', column2='partner_id', string='Partners',
+                                   copy=False)
 
     @api.constrains('parent_id')
     def _check_parent_id(self):
@@ -166,7 +171,8 @@ class Partner(models.Model):
     _inherit = ['format.address.mixin', 'avatar.mixin']
     _name = "res.partner"
     _order = "complete_name ASC, id DESC"
-    _rec_names_search = ['complete_name', 'email', 'ref', 'vat', 'company_registry']  # TODO vat must be sanitized the same way for storing/searching
+    _rec_names_search = ['complete_name', 'email', 'ref', 'vat',
+                         'company_registry']  # TODO vat must be sanitized the same way for storing/searching
     _allow_sudo_commands = False
     _check_company_domain = models.check_company_domain_parent_of
 
@@ -216,17 +222,20 @@ class Partner(models.Model):
         precompute=True,  # avoid queries post-create
         readonly=False, store=True,
         help='The internal user in charge of this contact.')
-    vat = fields.Char(string='Tax ID', index=True, help="The Tax Identification Number. Values here will be validated based on the country format. You can use '/' to indicate that the partner is not subject to tax.")
-    same_vat_partner_id = fields.Many2one('res.partner', string='Partner with same Tax ID', compute='_compute_same_vat_partner_id', store=False)
-    same_company_registry_partner_id = fields.Many2one('res.partner', string='Partner with same Company Registry', compute='_compute_same_vat_partner_id', store=False)
+    vat = fields.Char(string='Tax ID', index=True,
+                      help="The Tax Identification Number. Values here will be validated based on the country format. You can use '/' to indicate that the partner is not subject to tax.")
+    same_vat_partner_id = fields.Many2one('res.partner', string='Partner with same Tax ID',
+                                          compute='_compute_same_vat_partner_id', store=False)
+    same_company_registry_partner_id = fields.Many2one('res.partner', string='Partner with same Company Registry',
+                                                       compute='_compute_same_vat_partner_id', store=False)
     company_registry = fields.Char(string="Company ID", compute='_compute_company_registry', store=True, readonly=False,
-       help="The registry number of the company. Use it if it is different from the Tax ID. It must be unique across all partners of a same country")
+                                   help="The registry number of the company. Use it if it is different from the Tax ID. It must be unique across all partners of a same country")
     bank_ids = fields.One2many('res.partner.bank', 'partner_id', string='Banks')
     website = fields.Char('Website Link')
     comment = fields.Html(string='Notes')
 
     category_id = fields.Many2many('res.partner.category', column1='partner_id',
-                                    column2='category_id', string='Tags', default=_default_category)
+                                   column2='category_id', string='Tags', default=_default_category)
     active = fields.Boolean(default=True)
     employee = fields.Boolean(help="Check this box if this contact is an Employee.")
     function = fields.Char(string='Job Position')
@@ -235,18 +244,20 @@ class Partner(models.Model):
          ('invoice', 'Invoice Address'),
          ('delivery', 'Delivery Address'),
          ('other', 'Other Address'),
-        ], string='Address Type',
+         ], string='Address Type',
         default='contact',
         help="- Contact: Use this to organize the contact details of employees of a given company (e.g. CEO, CFO, ...).\n"
              "- Invoice Address: Preferred address for all invoices. Selected by default when you invoice an order that belongs to this company.\n"
              "- Delivery Address: Preferred address for all deliveries. Selected by default when you deliver an order that belongs to this company.\n"
              "- Other: Other address for the company (e.g. subsidiary, ...)")
+
     # address fields
     street = fields.Char()
     street2 = fields.Char()
     zip = fields.Char(change_default=True)
     city = fields.Char()
-    state_id = fields.Many2one("res.country.state", string='State', ondelete='restrict', domain="[('country_id', '=?', country_id)]")
+    state_id = fields.Many2one("res.country.state", string='State', ondelete='restrict',
+                               domain="[('country_id', '=?', country_id)]")
     country_id = fields.Many2one('res.country', string='Country', ondelete='restrict')
     country_code = fields.Char(related='country_id.code', string="Country Code")
     partner_latitude = fields.Float(string='Geo Latitude', digits=(10, 7))
@@ -258,13 +269,13 @@ class Partner(models.Model):
     phone = fields.Char(unaccent=False)
     mobile = fields.Char(unaccent=False)
     is_company = fields.Boolean(string='Is a Company', default=False,
-        help="Check if the contact is a company, otherwise it is a person")
+                                help="Check if the contact is a company, otherwise it is a person")
     is_public = fields.Boolean(compute='_compute_is_public')
     industry_id = fields.Many2one('res.partner.industry', 'Industry')
     # company_type is only an interface field, do not use it in business logic
     company_type = fields.Selection(string='Company Type',
-        selection=[('person', 'Individual'), ('company', 'Company')],
-        compute='_compute_company_type', inverse='_write_company_type')
+                                    selection=[('person', 'Individual'), ('company', 'Company')],
+                                    compute='_compute_company_type', inverse='_write_company_type')
     company_id = fields.Many2one('res.company', 'Company', index=True)
     color = fields.Integer(string='Color Index', default=0)
     user_ids = fields.One2many('res.users', 'partner_id', string='Users', auto_join=True)
@@ -288,7 +299,8 @@ class Partner(models.Model):
     self = fields.Many2one(comodel_name=_name, compute='_compute_get_ids')
 
     _sql_constraints = [
-        ('check_name', "CHECK( (type='contact' AND name IS NOT NULL) or (type!='contact') )", 'Contacts require a name'),
+        (
+        'check_name', "CHECK( (type='contact' AND name IS NOT NULL) or (type!='contact') )", 'Contacts require a name'),
     ]
 
     def _get_street_split(self):
@@ -316,7 +328,8 @@ class Partner(models.Model):
         super()._compute_avatar_128()
 
     def _compute_avatar(self, avatar_field, image_field):
-        partners_with_internal_user = self.filtered(lambda partner: partner.user_ids - partner.user_ids.filtered('share'))
+        partners_with_internal_user = self.filtered(
+            lambda partner: partner.user_ids - partner.user_ids.filtered('share'))
         super(Partner, partners_with_internal_user)._compute_avatar(avatar_field, image_field)
         partners_without_image = (self - partners_with_internal_user).filtered(lambda p: not p[image_field])
         for _, group in tools.groupby(partners_without_image, key=lambda p: p._avatar_get_placeholder_path()):
@@ -368,7 +381,8 @@ class Partner(models.Model):
     @api.depends('parent_id')
     def _compute_user_id(self):
         """ Synchronize sales rep with parent if partner is a person """
-        for partner in self.filtered(lambda partner: not partner.user_id and partner.company_type == 'person' and partner.parent_id.user_id):
+        for partner in self.filtered(
+                lambda partner: not partner.user_id and partner.company_type == 'person' and partner.parent_id.user_id):
             partner.user_id = partner.parent_id.user_id
 
     @api.depends('user_ids.share', 'user_ids.active')
@@ -384,8 +398,8 @@ class Partner(models.Model):
         for partner in self:
             # use _origin to deal with onchange()
             partner_id = partner._origin.id
-            #active_test = False because if a partner has been deactivated you still want to raise the error,
-            #so that you can reactivate it instead of creating a new one, which would loose its history.
+            # active_test = False because if a partner has been deactivated you still want to raise the error,
+            # so that you can reactivate it instead of creating a new one, which would loose its history.
             Partner = self.with_context(active_test=False).sudo()
             domain = [
                 ('vat', '=', partner.vat),
@@ -404,7 +418,8 @@ class Partner(models.Model):
             ]
             if partner_id:
                 domain += [('id', '!=', partner_id), '!', ('id', 'child_of', partner_id)]
-            partner.same_company_registry_partner_id = bool(partner.company_registry) and not partner.parent_id and Partner.search(domain, limit=1)
+            partner.same_company_registry_partner_id = bool(
+                partner.company_registry) and not partner.parent_id and Partner.search(domain, limit=1)
 
     @api.depends(lambda self: self._display_address_depends())
     def _compute_contact_address(self):
@@ -477,6 +492,7 @@ class Partner(models.Model):
             if any(self.parent_id[key] for key in address_fields):
                 def convert(value):
                     return value.id if isinstance(value, models.BaseModel) else value
+
                 result['value'] = {key: convert(self.parent_id[key]) for key in address_fields}
         return result
 
@@ -567,7 +583,8 @@ class Partner(models.Model):
             if field.type == 'many2one':
                 values[fname] = self[fname].id
             elif field.type == 'one2many':
-                raise AssertionError(_('One2Many fields cannot be synchronized as part of `commercial_fields` or `address fields`'))
+                raise AssertionError(
+                    _('One2Many fields cannot be synchronized as part of `commercial_fields` or `address fields`'))
             elif field.type == 'many2many':
                 values[fname] = [Command.set(self[fname].ids)]
             else:
@@ -658,7 +675,7 @@ class Partner(models.Model):
         parent = self.parent_id
         address_fields = self._address_fields()
         if (parent.is_company or not parent.parent_id) and len(parent.child_ids) == 1 and \
-            any(self[f] for f in address_fields) and not any(parent[f] for f in address_fields):
+                any(self[f] for f in address_fields) and not any(parent[f] for f in address_fields):
             addr_vals = self._update_fields_values(address_fields)
             parent.update_address(addr_vals)
 
@@ -697,7 +714,8 @@ class Partner(models.Model):
                 else:
                     raise ValidationError(_('You cannot archive contacts linked to an active user.\n'
                                             'Ask an administrator to archive their associated user first.\n\n'
-                                            'Linked active users :\n%(names)s', names=", ".join([u.display_name for u in users])))
+                                            'Linked active users :\n%(names)s',
+                                            names=", ".join([u.display_name for u in users])))
         # res.partner must only allow to set the company_id of a partner if it
         # is the same as the company of all users that inherit from this partner
         # (this is to allow the code from res_users to write to the partner!) or
@@ -766,7 +784,8 @@ class Partner(models.Model):
         else:
             raise ValidationError(_('You cannot delete contacts linked to an active user.\n'
                                     'Ask an administrator to archive their associated user first.\n\n'
-                                    'Linked active users :\n%(names)s', names=", ".join([u.display_name for u in users])))
+                                    'Linked active users :\n%(names)s',
+                                    names=", ".join([u.display_name for u in users])))
 
     def _load_records_create(self, vals_list):
         partners = super(Partner, self.with_context(_partners_skip_fields_sync=True))._load_records_create(vals_list)
@@ -816,7 +835,8 @@ class Partner(models.Model):
             # Set new company as my parent
             self.write({
                 'parent_id': new_company.id,
-                'child_ids': [Command.update(partner_id, dict(parent_id=new_company.id)) for partner_id in self.child_ids.ids]
+                'child_ids': [Command.update(partner_id, dict(parent_id=new_company.id)) for partner_id in
+                              self.child_ids.ids]
             })
         return True
 
@@ -926,7 +946,8 @@ class Partner(models.Model):
         return base64.b64encode(res.content)
 
     def _email_send(self, email_from, subject, body, on_error=None):
-        warnings.warn("Partner._email_send has not done anything but raise errors since 15.0", stacklevel=2, category=DeprecationWarning)
+        warnings.warn("Partner._email_send has not done anything but raise errors since 15.0", stacklevel=2,
+                      category=DeprecationWarning)
         return True
 
     def address_get(self, adr_pref=None):
@@ -953,8 +974,8 @@ class Partner(models.Model):
                     if len(result) == len(adr_pref):
                         return result
                     to_scan = [c for c in record.child_ids
-                                 if c not in visited
-                                 if not c.is_company] + to_scan
+                               if c not in visited
+                               if not c.is_company] + to_scan
 
                 # Continue scanning at ancestor if current_partner is not a commercial entity
                 if current_partner.is_company or not current_partner.parent_id:
@@ -970,7 +991,7 @@ class Partner(models.Model):
     @api.model
     def view_header_get(self, view_id, view_type):
         if self.env.context.get('category_id'):
-            return  _(
+            return _(
                 'Partners: %(category)s',
                 category=self.env['res.partner.category'].browse(self.env.context['category_id']).name,
             )
